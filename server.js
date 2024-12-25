@@ -1,40 +1,15 @@
-// server.js
 const express = require('express');
-const bodyParser = require('body-parser');
-const twilio = require('twilio');
-
+const path = require('path');
 const app = express();
-const port = 3000;
 
-// Twilio credentials
-require('dotenv').config();
+// Serve static files
+app.use(express.static(path.join(__dirname, 'public')));
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const client = require('twilio')(accountSid, authToken);
-
-
-// Middleware
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
-// API endpoint to send SMS
-app.post('/send-sms', (req, res) => {
-    const { to, message } = req.body;
-
-    client.messages
-        .create({
-            body: message,
-            from: '+16163192638', // e.g., +1234567890
-            to: to,
-        })
-        .then((message) => res.status(200).send(`Message sent: ${message.sid}`))
-        .catch((error) => res.status(500).send(error));
+// Fallback to index.html for all routes
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Serve frontend (optional for hosting static files)
-app.use(express.static('public'));
-
-app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
-});
+// Start the server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server is running on http://localhost:${PORT}`));
